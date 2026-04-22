@@ -3,673 +3,1440 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Score Predictor</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<title>ScoreAI – Student Score Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f5f2eb;
-    --card: #ffffff;
-    --ink: #1a1a2e;
-    --muted: #6b6b80;
-    --green: #2d6a4f;
-    --green-light: #d8f3dc;
-    --amber: #e07b39;
-    --amber-light: #fde8d8;
-    --red: #c1121f;
-    --red-light: #ffe0e0;
-    --blue: #1b4f72;
-    --border: #e0ddd6;
-    --shadow: 0 2px 20px rgba(26,26,46,0.08);
-  }
+/* ── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #f0f4ff;
+  --surface:   #ffffff;
+  --sidebar-bg:#0f1b2d;
+  --sidebar-w: 240px;
+  --primary:   #4361ee;
+  --primary-d: #3451d1;
+  --primary-l: #eef0fd;
+  --green:     #22c55e;
+  --green-l:   #dcfce7;
+  --amber:     #f59e0b;
+  --amber-l:   #fef3c7;
+  --red:       #ef4444;
+  --red-l:     #fee2e2;
+  --ink:       #0f172a;
+  --ink2:      #475569;
+  --border:    #e2e8f0;
+  --shadow:    0 1px 3px rgba(15,23,42,.06), 0 4px 16px rgba(15,23,42,.06);
+  --shadow-md: 0 4px 24px rgba(15,23,42,.10);
+  --radius:    14px;
+  --font:      'Plus Jakarta Sans', sans-serif;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    padding: 40px 20px 80px;
-  }
+html { font-size: 15px; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+}
 
-  /* Subtle grid texture */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(26,26,46,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(26,26,46,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ── Sidebar ──────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--sidebar-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  transition: transform .3s ease;
+}
 
-  .page { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; }
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
 
-  /* Header */
-  .header {
-    margin-bottom: 40px;
-    opacity: 0;
-    animation: slideIn 0.5s ease forwards;
-  }
+.logo-icon {
+  width: 36px; height: 36px;
+  background: var(--primary);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 18px;
+}
 
-  .header-tag {
-    display: inline-block;
-    background: var(--ink);
-    color: var(--bg);
-    font-family: 'Syne', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 4px 12px;
-    border-radius: 2px;
-    margin-bottom: 16px;
-  }
+.logo-text {
+  font-size: 16px; font-weight: 800;
+  color: #fff;
+  letter-spacing: -.3px;
+}
 
-  h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 800;
-    line-height: 1.1;
-    color: var(--ink);
-  }
+.logo-text span { color: #7c9dff; }
 
-  h1 span { color: var(--amber); }
+nav { padding: 20px 12px; flex: 1; }
 
-  .header-sub {
-    margin-top: 10px;
-    font-size: 15px;
-    color: var(--muted);
-    font-weight: 300;
-    max-width: 500px;
-    line-height: 1.6;
-  }
+.nav-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  padding: 0 12px;
+  margin-bottom: 8px; margin-top: 16px;
+}
 
-  /* Layout grid */
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,.55);
+  font-size: 13.5px; font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 2px;
+  user-select: none;
+}
 
-  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+.nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
 
-  /* Card */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-    box-shadow: var(--shadow);
-    opacity: 0;
-    animation: slideIn 0.5s ease forwards;
-  }
+.nav-item.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
 
-  .card:nth-child(1) { animation-delay: 0.1s; }
-  .card:nth-child(2) { animation-delay: 0.15s; }
-  .card:nth-child(3) { animation-delay: 0.2s; }
-  .card.full { grid-column: 1 / -1; }
+.nav-item .icon { font-size: 17px; width: 20px; text-align: center; }
 
-  .card-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.nav-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+}
+.nav-item.active .nav-badge { background: rgba(255,255,255,.25); }
 
-  .card-title::before {
-    content: '';
-    display: inline-block;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--amber);
-  }
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
 
-  /* Sliders */
-  .field { margin-bottom: 20px; }
-  .field:last-child { margin-bottom: 0; }
+.user-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.05);
+}
 
-  .field-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 8px;
-  }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg,#7c9dff,#4361ee);
+  display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
 
-  .field-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink);
-  }
+.user-name { font-size: 12.5px; font-weight: 600; color: #fff; }
+.user-role { font-size: 11px; color: rgba(255,255,255,.4); }
 
-  .field-value {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--amber);
-    min-width: 40px;
-    text-align: right;
-  }
+/* ── Main ─────────────────────────────────────────────────── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 4px;
-    background: var(--border);
-    border-radius: 4px;
-    outline: none;
-    cursor: pointer;
-  }
+/* Topbar */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
 
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    background: var(--ink);
-    border: 3px solid var(--bg);
-    box-shadow: 0 0 0 2px var(--ink);
-    cursor: pointer;
-    transition: transform 0.15s;
-  }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
 
-  input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-  }
+.hamburger {
+  display: none;
+  background: none; border: none;
+  font-size: 20px; cursor: pointer; color: var(--ink2);
+  padding: 4px;
+}
 
-  .field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.page-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+.page-breadcrumb { font-size: 12px; color: var(--ink2); }
 
-  /* Toggle */
-  .toggle-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-top: 1px solid var(--border);
-    margin-top: 4px;
-  }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
 
-  .toggle-label { font-size: 13px; font-weight: 500; }
-  .toggle-sub { font-size: 11px; color: var(--muted); }
+.topbar-btn {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: grid; place-items: center;
+  cursor: pointer;
+  font-size: 16px;
+  position: relative;
+  transition: background .2s;
+}
+.topbar-btn:hover { background: var(--primary-l); }
 
-  .toggle {
-    position: relative;
-    width: 44px; height: 24px;
-    flex-shrink: 0;
-  }
+.notif-dot {
+  position: absolute; top: 7px; right: 7px;
+  width: 7px; height: 7px;
+  background: var(--red); border-radius: 50%;
+  border: 1.5px solid var(--surface);
+}
 
-  .toggle input { display: none; }
+/* Content */
+.content { padding: 28px 32px; flex: 1; }
 
-  .toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--border);
-    border-radius: 24px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+/* Pages */
+.page { display: none; }
+.page.active { display: block; }
 
-  .toggle-slider::after {
-    content: '';
-    position: absolute;
-    left: 3px; top: 3px;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    background: white;
-    transition: transform 0.2s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-  }
+/* ── Cards ────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
 
-  .toggle input:checked + .toggle-slider { background: var(--green); }
-  .toggle input:checked + .toggle-slider::after { transform: translateX(20px); }
+.card-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.card-sub { font-size: 12.5px; color: var(--ink2); }
 
-  /* Predict button */
-  .btn-predict {
-    width: 100%;
-    padding: 16px;
-    background: var(--ink);
-    color: var(--bg);
-    border: none;
-    border-radius: 10px;
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 4px;
-    text-transform: uppercase;
-    position: relative;
-    overflow: hidden;
-  }
+/* ── Home / Dashboard ─────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
 
-  .btn-predict::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--amber);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px 22px;
+  display: flex; align-items: center; gap: 16px;
+}
 
-  .btn-predict:hover::before { transform: translateX(0); }
-  .btn-predict span { position: relative; z-index: 1; }
-  .btn-predict:hover { color: var(--ink); }
-  .btn-predict:active { transform: scale(0.98); }
+.stat-icon {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
 
-  /* Result card */
-  .result-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: var(--shadow);
-    opacity: 0;
-    transform: translateY(12px);
-    transition: all 0.4s ease;
-    margin-top: 16px;
-  }
+.stat-val { font-size: 24px; font-weight: 800; color: var(--ink); line-height: 1; }
+.stat-label { font-size: 12px; color: var(--ink2); margin-top: 3px; }
+.stat-change {
+  font-size: 11px; font-weight: 600;
+  margin-top: 4px;
+}
+.stat-change.up { color: var(--green); }
+.stat-change.down { color: var(--red); }
 
-  .result-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+}
 
-  .result-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
+/* Mini chart */
+.mini-chart { margin-top: 16px; }
+.chart-bars {
+  display: flex; align-items: flex-end; gap: 6px;
+  height: 100px;
+}
+.chart-bar-wrap {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.chart-bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: var(--primary-l);
+  transition: background .2s;
+  cursor: pointer;
+  position: relative;
+}
+.chart-bar.highlight { background: var(--primary); }
+.chart-bar:hover { background: var(--primary); }
+.chart-bar-label { font-size: 10px; color: var(--ink2); }
 
-  .score-display {
-    font-family: 'Syne', sans-serif;
-    font-size: 72px;
-    font-weight: 800;
-    line-height: 1;
-    transition: color 0.4s;
-  }
+/* Recent list */
+.recent-list { margin-top: 16px; }
+.recent-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.recent-item:last-child { border-bottom: none; padding-bottom: 0; }
 
-  .score-display sub {
-    font-size: 20px;
-    font-weight: 400;
-    color: var(--muted);
-    vertical-align: bottom;
-    margin-left: 4px;
-  }
+.recent-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
 
-  .grade-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 16px;
-    border-radius: 999px;
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    margin-top: 8px;
-  }
+.recent-name { font-size: 13px; font-weight: 600; }
+.recent-sub  { font-size: 11.5px; color: var(--ink2); }
+.recent-score {
+  margin-left: auto;
+  font-size: 14px; font-weight: 800;
+}
 
-  .advice-text {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.65;
-    font-style: italic;
-    border-left: 3px solid var(--border);
-    padding-left: 16px;
-    margin-top: 20px;
-  }
+.badge {
+  display: inline-block;
+  padding: 2px 9px; border-radius: 20px;
+  font-size: 10.5px; font-weight: 700;
+}
+.badge-green  { background: var(--green-l);  color: #15803d; }
+.badge-amber  { background: var(--amber-l);  color: #92400e; }
+.badge-red    { background: var(--red-l);    color: #b91c1c; }
+.badge-blue   { background: var(--primary-l); color: var(--primary-d); }
 
-  /* Progress bar */
-  .progress-wrap {
-    margin-top: 20px;
-  }
+/* ── Predict Form ─────────────────────────────────────────── */
+.predict-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  align-items: start;
+}
 
-  .progress-label {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
 
-  .progress-bar-bg {
-    height: 8px;
-    background: var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
+.section-title { font-size: 16px; font-weight: 700; }
+.section-sub   { font-size: 12.5px; color: var(--ink2); margin-top: 2px; }
 
-  .progress-bar-fill {
-    height: 100%;
-    border-radius: 8px;
-    width: 0%;
-    transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
-  }
+/* Form */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
 
-  /* Feature importance mini chart */
-  .factors {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-  }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
 
-  .factors-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 14px;
-  }
+.form-label {
+  font-size: 12.5px; font-weight: 600;
+  color: var(--ink);
+  display: flex; align-items: center; gap: 5px;
+}
 
-  .factor-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-    font-size: 12px;
-  }
+.form-label .licon { font-size: 14px; }
 
-  .factor-name { width: 130px; color: var(--ink); flex-shrink: 0; }
-  .factor-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
-  .factor-bar { height: 100%; border-radius: 4px; background: var(--amber); transition: width 0.7s ease; }
-  .factor-val { width: 36px; text-align: right; color: var(--muted); font-size: 11px; }
+.form-input, .form-select {
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--surface);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  appearance: none;
+}
 
-  /* Animations */
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+.form-input:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67,97,238,.12);
+}
 
-  /* How it works */
-  .how-section {
-    margin-top: 16px;
-    opacity: 0;
-    animation: slideIn 0.5s ease forwards 0.4s;
-  }
+.form-input.error { border-color: var(--red); }
+.form-input.valid { border-color: var(--green); }
+.error-msg { font-size: 11.5px; color: var(--red); margin-top: 2px; display: none; }
+.error-msg.show { display: block; }
 
-  .how-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
+/* Slider */
+.slider-wrap { display: flex; flex-direction: column; gap: 6px; }
+.slider-row { display: flex; align-items: center; gap: 10px; }
 
-  @media (max-width: 560px) { .how-grid { grid-template-columns: 1fr; } }
+input[type="range"] {
+  -webkit-appearance: none;
+  flex: 1; height: 5px;
+  background: var(--border);
+  border-radius: 5px; outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 2px var(--primary);
+  cursor: pointer;
+  transition: transform .15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-  .how-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: var(--shadow);
-  }
+.slider-val {
+  min-width: 42px; text-align: right;
+  font-size: 14px; font-weight: 700;
+  color: var(--primary);
+}
 
-  .how-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--border);
-    line-height: 1;
-    margin-bottom: 8px;
-  }
+.slider-track {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--ink2);
+}
 
-  .how-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-  .how-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+/* Exam type pills */
+.pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill-btn {
+  padding: 8px 16px; border-radius: 20px;
+  border: 1.5px solid var(--border);
+  font-family: var(--font); font-size: 12.5px; font-weight: 600;
+  cursor: pointer; transition: all .2s;
+  background: var(--surface); color: var(--ink2);
+}
+.pill-btn:hover { border-color: var(--primary); color: var(--primary); }
+.pill-btn.active {
+  background: var(--primary); border-color: var(--primary);
+  color: #fff;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 10px;
+  font-family: var(--font); font-size: 13.5px; font-weight: 700;
+  cursor: pointer; border: none; transition: all .2s;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--primary); color: #fff;
+}
+.btn-primary:hover { background: var(--primary-d); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(67,97,238,.35); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-ghost {
+  background: var(--bg); color: var(--ink2);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { background: var(--border); }
+
+.btn-lg { padding: 14px 32px; font-size: 14.5px; width: 100%; justify-content: center; }
+
+/* Loading */
+.btn.loading { pointer-events: none; opacity: .7; }
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+.btn.loading .spinner { display: block; }
+.btn.loading .btn-text { display: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Result Panel ─────────────────────────────────────────── */
+.result-panel { position: sticky; top: 80px; }
+
+.score-big {
+  text-align: center;
+  padding: 8px 0 20px;
+}
+
+.score-ring {
+  position: relative;
+  width: 140px; height: 140px;
+  margin: 0 auto 16px;
+}
+
+.score-ring svg { transform: rotate(-90deg); }
+
+.score-ring-track { fill: none; stroke: var(--border); stroke-width: 10; }
+.score-ring-fill  {
+  fill: none; stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 376;
+  stroke-dashoffset: 376;
+  transition: stroke-dashoffset 1s cubic-bezier(.22,1,.36,1), stroke .4s;
+}
+
+.score-ring-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+.score-number {
+  font-size: 36px; font-weight: 800; line-height: 1;
+  color: var(--ink);
+}
+
+.score-outof { font-size: 12px; color: var(--ink2); }
+
+.perf-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 16px; border-radius: 20px;
+  font-size: 12.5px; font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.score-grade { font-size: 13px; color: var(--ink2); }
+
+/* Bar chart */
+.bar-chart { margin-top: 16px; }
+
+.bar-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+
+.bar-name { font-size: 11.5px; color: var(--ink2); width: 90px; flex-shrink: 0; }
+.bar-track {
+  flex: 1; height: 8px; background: var(--border); border-radius: 8px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; border-radius: 8px;
+  background: var(--primary);
+  width: 0%; transition: width .8s cubic-bezier(.22,1,.36,1);
+}
+.bar-pct { font-size: 11.5px; font-weight: 700; color: var(--ink); width: 30px; text-align: right; }
+
+/* Performance gauge */
+.perf-track {
+  display: flex; gap: 4px; margin-top: 16px;
+}
+.perf-seg {
+  flex: 1; height: 6px; border-radius: 4px;
+  background: var(--border);
+  transition: background .4s;
+}
+
+.placeholder-msg {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink2);
+  font-size: 13px;
+}
+.placeholder-msg .ph-icon { font-size: 40px; margin-bottom: 12px; }
+.placeholder-msg p { line-height: 1.6; }
+
+/* ── History ──────────────────────────────────────────────── */
+.history-controls {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 14px;
+  flex: 1; min-width: 200px;
+}
+.search-box input {
+  border: none; outline: none;
+  font-family: var(--font); font-size: 13px;
+  color: var(--ink); background: transparent; width: 100%;
+}
+.search-icon { color: var(--ink2); font-size: 15px; }
+
+.filter-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  font-family: var(--font); font-size: 12.5px; font-weight: 600;
+  cursor: pointer; color: var(--ink2);
+  transition: all .2s;
+}
+.filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+.filter-btn.active { background: var(--primary-l); border-color: var(--primary); color: var(--primary); }
+
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th {
+  text-align: left; padding: 10px 16px;
+  font-size: 11px; font-weight: 700;
+  color: var(--ink2); text-transform: uppercase; letter-spacing: .07em;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.history-table td {
+  padding: 13px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.history-table tr:last-child td { border-bottom: none; }
+.history-table tr:hover td { background: var(--bg); }
+
+.score-pill {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+}
+
+/* ── Insights ─────────────────────────────────────────────── */
+.insights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px;
+  display: flex; gap: 16px;
+}
+
+.insight-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: grid; place-items: center;
+  font-size: 20px; flex-shrink: 0;
+}
+
+.insight-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.insight-desc  { font-size: 12.5px; color: var(--ink2); line-height: 1.6; }
+
+.tip-list { list-style: none; }
+.tip-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.tip-item:last-child { border-bottom: none; }
+.tip-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--primary-l); color: var(--primary);
+  font-size: 11px; font-weight: 800;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.tip-text { font-size: 13px; color: var(--ink); line-height: 1.6; }
+.tip-text strong { color: var(--primary); }
+
+/* Progress ring small */
+.mini-rings {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
+  margin-top: 16px;
+}
+.mini-ring-wrap { text-align: center; }
+.mini-ring-label { font-size: 11.5px; color: var(--ink2); margin-top: 6px; }
+.mini-ring-val   { font-size: 14px; font-weight: 800; color: var(--ink); }
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fadeIn  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+.page.active { animation: fadeIn .3s ease; }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .predict-layout { grid-template-columns: 1fr; }
+  .result-panel { position: static; }
+  .insights-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  :root { --sidebar-w: 0px; }
+  .sidebar { transform: translateX(-240px); --sidebar-w: 240px; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .hamburger { display: block; }
+  .content { padding: 20px 16px; }
+  .topbar { padding: 0 16px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+  .history-table th:nth-child(3),
+  .history-table td:nth-child(3) { display: none; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .mini-rings { grid-template-columns: repeat(3,1fr); }
+}
+
+/* Overlay */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.4); z-index: 90;
+}
+.overlay.show { display: block; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--ink); color: #fff;
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: var(--shadow-md);
+  transform: translateY(80px); opacity: 0;
+  transition: all .3s ease;
+  z-index: 999;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
 </style>
 </head>
 <body>
-<div class="page">
 
-  <div class="header">
-    <div class="header-tag">Machine Learning · Linear Regression</div>
-    <h1>Student Score<br><span>Predictor</span></h1>
-    <p class="header-sub">Adjust the sliders below to enter student data. The model predicts the expected exam score using 5 key features.</p>
+<!-- Overlay (mobile) -->
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-text">Score<span>AI</span></div>
   </div>
 
-  <div class="grid">
-
-    <!-- Card 1: Study & Sleep -->
-    <div class="card">
-      <div class="card-title">Academic Habits</div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">📚 Study Hours / Day</span>
-          <span class="field-value" id="val-study">5.0</span>
-        </div>
-        <input type="range" min="1" max="10" step="0.5" value="5"
-               oninput="update('study', this.value)">
-        <div class="field-hint">Hours dedicated to studying each day</div>
-      </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">😴 Sleep Hours / Night</span>
-          <span class="field-value" id="val-sleep">7.0</span>
-        </div>
-        <input type="range" min="4" max="9" step="0.5" value="7"
-               oninput="update('sleep', this.value)">
-        <div class="field-hint">Sleep directly affects memory retention</div>
-      </div>
+  <nav>
+    <div class="nav-label">Main</div>
+    <div class="nav-item active" onclick="showPage('home',this)">
+      <span class="icon">🏠</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('predict',this)">
+      <span class="icon">🔮</span> Predict Score
     </div>
 
-    <!-- Card 2: Attendance & Previous Score -->
-    <div class="card">
-      <div class="card-title">Performance Metrics</div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">🏫 Attendance</span>
-          <span class="field-value" id="val-attend">80<small style="font-size:12px">%</small></span>
-        </div>
-        <input type="range" min="50" max="100" step="1" value="80"
-               oninput="update('attend', this.value)">
-        <div class="field-hint">Percentage of classes attended</div>
-      </div>
-
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">📝 Previous Score</span>
-          <span class="field-value" id="val-prev">65</span>
-        </div>
-        <input type="range" min="0" max="100" step="1" value="65"
-               oninput="update('prev', this.value)">
-        <div class="field-hint">Score from most recent past exam</div>
-      </div>
-
-      <div class="toggle-row">
-        <div>
-          <div class="toggle-label">🎓 Extra Coaching</div>
-          <div class="toggle-sub">Attends additional classes outside school</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="toggle-extra" onchange="predict()">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+    <div class="nav-label">Analytics</div>
+    <div class="nav-item" onclick="showPage('history',this)">
+      <span class="icon">🕓</span> History
+      <span class="nav-badge">12</span>
     </div>
+    <div class="nav-item" onclick="showPage('insights',this)">
+      <span class="icon">💡</span> Insights
+    </div>
+  </nav>
 
-  </div>
-
-  <!-- Predict button -->
-  <div class="card full" style="padding: 20px 28px; animation-delay: 0.25s;">
-    <button class="btn-predict" onclick="predict()">
-      <span>→ Predict Exam Score</span>
-    </button>
-  </div>
-
-  <!-- Result -->
-  <div class="result-card" id="result-card">
-    <div class="result-top">
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">SS</div>
       <div>
-        <div class="score-display" id="score-display">—<sub>/100</sub></div>
-        <div class="grade-badge" id="grade-badge">–</div>
-      </div>
-    </div>
-    <div class="advice-text" id="advice-text">Run the predictor to see results.</div>
-
-    <div class="progress-wrap">
-      <div class="progress-label">Score Meter</div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progress-fill"></div>
-      </div>
-    </div>
-
-    <div class="factors">
-      <div class="factors-title">Feature Impact (relative weight)</div>
-      <div class="factor-row">
-        <span class="factor-name">📚 Study Hours</span>
-        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-study" style="width:0%"></div></div>
-        <span class="factor-val" id="fval-study">—</span>
-      </div>
-      <div class="factor-row">
-        <span class="factor-name">🏫 Attendance</span>
-        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-attend" style="width:0%"></div></div>
-        <span class="factor-val" id="fval-attend">—</span>
-      </div>
-      <div class="factor-row">
-        <span class="factor-name">📝 Prev Score</span>
-        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-prev" style="width:0%; background:#1b4f72"></div></div>
-        <span class="factor-val" id="fval-prev">—</span>
-      </div>
-      <div class="factor-row">
-        <span class="factor-name">😴 Sleep</span>
-        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-sleep" style="width:0%; background:#2d6a4f"></div></div>
-        <span class="factor-val" id="fval-sleep">—</span>
-      </div>
-      <div class="factor-row">
-        <span class="factor-name">🎓 Extra Classes</span>
-        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-extra" style="width:0%; background:#c1121f"></div></div>
-        <span class="factor-val" id="fval-extra">—</span>
+        <div class="user-name">Shatakshi S.</div>
+        <div class="user-role">Student</div>
       </div>
     </div>
   </div>
+</aside>
 
-  <!-- How it works -->
-  <div class="how-section">
-    <div class="card" style="margin-top:16px; opacity:1; animation:none;">
-      <div class="card-title">How It Works</div>
-      <div class="how-grid">
-        <div class="how-item">
-          <div class="how-num">01</div>
-          <div class="how-title">Data Collection</div>
-          <div class="how-desc">500 synthetic student records generated with realistic noise and feature weights.</div>
-        </div>
-        <div class="how-item">
-          <div class="how-num">02</div>
-          <div class="how-title">Linear Regression</div>
-          <div class="how-desc">A trained model learns the weight of each feature. Scaled using StandardScaler for accuracy.</div>
-        </div>
-        <div class="how-item">
-          <div class="how-num">03</div>
-          <div class="how-title">Prediction</div>
-          <div class="how-desc">Your inputs are combined using the model's learned equation to estimate the exam score.</div>
-        </div>
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="page-title" id="topbar-title">Dashboard</div>
+        <div class="page-breadcrumb" id="topbar-crumb">Overview of your performance</div>
       </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-btn" title="Search">🔍</div>
+      <div class="topbar-btn" title="Notifications">
+        🔔 <span class="notif-dot"></span>
+      </div>
+      <div class="avatar" style="width:36px;height:36px;cursor:pointer">SS</div>
     </div>
   </div>
 
-</div>
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ── HOME PAGE ── -->
+    <div class="page active" id="page-home">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#eef0fd">📊</div>
+          <div>
+            <div class="stat-val">78.4</div>
+            <div class="stat-label">Avg Predicted Score</div>
+            <div class="stat-change up">↑ 4.2 this month</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dcfce7">✅</div>
+          <div>
+            <div class="stat-val">12</div>
+            <div class="stat-label">Total Predictions</div>
+            <div class="stat-change up">↑ 3 new</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef3c7">🏆</div>
+          <div>
+            <div class="stat-val">92</div>
+            <div class="stat-label">Best Score</div>
+            <div class="stat-change up">↑ Personal best</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fee2e2">📅</div>
+          <div>
+            <div class="stat-val">86%</div>
+            <div class="stat-label">Avg Attendance</div>
+            <div class="stat-change down">↓ 2% vs last month</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="section-header">
+            <div>
+              <div class="card-title">Score Trend</div>
+              <div class="card-sub">Last 7 predictions</div>
+            </div>
+            <span class="badge badge-blue">This Month</span>
+          </div>
+          <div class="mini-chart">
+            <div class="chart-bars" id="trend-chart"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Recent Predictions</div>
+          <div class="card-sub" style="margin-bottom:4px">Your latest results</div>
+          <div class="recent-list" id="recent-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PREDICT PAGE ── -->
+    <div class="page" id="page-predict">
+      <div class="predict-layout">
+
+        <!-- Form -->
+        <div class="card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Enter Student Details</div>
+              <div class="section-sub">Fill all fields for an accurate prediction</div>
+            </div>
+            <button class="btn btn-ghost" onclick="resetForm()" style="padding:8px 16px;font-size:12px">↺ Reset</button>
+          </div>
+
+          <div class="form-grid-2">
+
+            <!-- Study Hours -->
+            <div class="form-group">
+              <label class="form-label"><span class="licon">📚</span> Study Hours / Day</label>
+              <div class="slider-wrap">
+                <div class="slider-row">
+                  <input type="range" min="0" max="12" step="0.5" value="5" id="sl-study"
+                         oninput="updateSlider('study',this.value); livePredict()">
+                  <span class="slider-val" id="sv-study">5h</span>
+                </div>
+                <div class="slider-track"><span>0h</span><span>6h</span><span>12h</span></div>
+              </div>
+            </div>
+
+            <!-- Attendance -->
+            <div class="form-group">
+              <label class="form-label"><span class="licon">🏫</span> Attendance %</label>
+              <div class="slider-wrap">
+                <div class="slider-row">
+                  <input type="range" min="0" max="100" step="1" value="80" id="sl-attend"
+                         oninput="updateSlider('attend',this.value); livePredict()">
+                  <span class="slider-val" id="sv-attend">80%</span>
+                </div>
+                <div class="slider-track"><span>0%</span><span>50%</span><span>100%</span></div>
+              </div>
+            </div>
+
+            <!-- Previous Marks -->
+            <div class="form-group">
+              <label class="form-label"><span class="licon">📝</span> Previous Marks</label>
+              <input type="number" class="form-input" id="inp-prev" placeholder="e.g. 72"
+                     min="0" max="100" value=""
+                     oninput="validateField(this,0,100); livePredict()">
+              <span class="error-msg" id="err-prev">Enter a score between 0 and 100</span>
+            </div>
+
+            <!-- Assignments -->
+            <div class="form-group">
+              <label class="form-label"><span class="licon">📋</span> Assignments Done</label>
+              <input type="number" class="form-input" id="inp-asgn" placeholder="e.g. 8"
+                     min="0" max="10" value=""
+                     oninput="validateField(this,0,10); livePredict()">
+              <span class="error-msg" id="err-asgn">Enter a value between 0 and 10</span>
+            </div>
+
+            <!-- Sleep Hours -->
+            <div class="form-group">
+              <label class="form-label"><span class="licon">😴</span> Sleep Hours / Night</label>
+              <div class="slider-wrap">
+                <div class="slider-row">
+                  <input type="range" min="3" max="10" step="0.5" value="7" id="sl-sleep"
+                         oninput="updateSlider('sleep',this.value); livePredict()">
+                  <span class="slider-val" id="sv-sleep">7h</span>
+                </div>
+                <div class="slider-track"><span>3h</span><span>6.5h</span><span>10h</span></div>
+              </div>
+            </div>
+
+            <!-- Extra Classes -->
+            <div class="form-group">
+              <label class="form-label"><span class="licon">🎓</span> Extra Coaching</label>
+              <select class="form-select" id="sel-extra" onchange="livePredict()">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </div>
+
+            <!-- Exam Type -->
+            <div class="form-group full">
+              <label class="form-label"><span class="licon">📄</span> Exam Type</label>
+              <div class="pill-group" id="exam-pills">
+                <button class="pill-btn active" onclick="selectPill(this,'midterm')">Midterm</button>
+                <button class="pill-btn" onclick="selectPill(this,'final')">Final Exam</button>
+                <button class="pill-btn" onclick="selectPill(this,'unit')">Unit Test</button>
+                <button class="pill-btn" onclick="selectPill(this,'practical')">Practical</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="margin-top:24px; display:flex; gap:12px;">
+            <button class="btn btn-primary btn-lg" id="predict-btn" onclick="runPredict()">
+              <span class="spinner"></span>
+              <span class="btn-text">🔮 Predict Score</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Result Panel -->
+        <div class="result-panel">
+          <div class="card" id="result-card">
+            <div class="card-title">Prediction Result</div>
+
+            <!-- Placeholder -->
+            <div class="placeholder-msg" id="result-placeholder">
+              <div class="ph-icon">🎯</div>
+              <p>Fill in the form and click <strong>Predict Score</strong> to see your result here.</p>
+            </div>
+
+            <!-- Result (hidden until predicted) -->
+            <div id="result-content" style="display:none">
+              <div class="score-big">
+                <div class="score-ring">
+                  <svg width="140" height="140" viewBox="0 0 140 140">
+                    <circle class="score-ring-track" cx="70" cy="70" r="60"/>
+                    <circle class="score-ring-fill" id="ring-fill" cx="70" cy="70" r="60"/>
+                  </svg>
+                  <div class="score-ring-text">
+                    <div class="score-number" id="score-num">–</div>
+                    <div class="score-outof">out of 100</div>
+                  </div>
+                </div>
+                <div class="perf-badge" id="perf-badge">–</div>
+                <div class="score-grade" id="score-grade"></div>
+              </div>
+
+              <!-- Factor bars -->
+              <div class="bar-chart" id="factor-bars">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2);margin-bottom:10px">Factor Contribution</div>
+              </div>
+
+              <!-- Perf track -->
+              <div style="margin-top:16px">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-bottom:6px">
+                  <span>Low</span><span>Average</span><span>High</span>
+                </div>
+                <div class="perf-track" id="perf-track">
+                  <div class="perf-seg" id="ps1"></div>
+                  <div class="perf-seg" id="ps2"></div>
+                  <div class="perf-seg" id="ps3"></div>
+                  <div class="perf-seg" id="ps4"></div>
+                  <div class="perf-seg" id="ps5"></div>
+                </div>
+              </div>
+
+              <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:16px;font-size:12.5px"
+                      onclick="showPage('insights', document.querySelector('.nav-item:nth-child(6)'))">
+                💡 View Improvement Tips →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY PAGE ── -->
+    <div class="page" id="page-history">
+      <div class="history-controls">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search by exam type or date…" oninput="filterHistory(this.value)">
+        </div>
+        <button class="filter-btn active" onclick="filterTag(this,'all')">All</button>
+        <button class="filter-btn" onclick="filterTag(this,'high')">🟢 High</button>
+        <button class="filter-btn" onclick="filterTag(this,'average')">🟡 Average</button>
+        <button class="filter-btn" onclick="filterTag(this,'low')">🔴 Low</button>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="history-table" id="history-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Exam Type</th>
+              <th>Study Hrs</th>
+              <th>Attendance</th>
+              <th>Prev Score</th>
+              <th>Predicted</th>
+              <th>Performance</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── INSIGHTS PAGE ── -->
+    <div class="page" id="page-insights">
+      <div class="insights-grid">
+        <div class="insight-card">
+          <div class="insight-icon" style="background:#eef0fd">📈</div>
+          <div>
+            <div class="insight-title">Strength: Study Consistency</div>
+            <div class="insight-desc">Your average of 6.2 hrs/day puts you in the top 30% of predictors. Keep this habit to sustain high scores.</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon" style="background:#fef3c7">⚠️</div>
+          <div>
+            <div class="insight-title">Weakness: Attendance Dips</div>
+            <div class="insight-desc">Attendance dropped below 75% in 3 recent entries. Even 10% lower attendance reduces predicted score by ~5 points.</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon" style="background:#dcfce7">😴</div>
+          <div>
+            <div class="insight-title">Sleep Quality Impact</div>
+            <div class="insight-desc">Entries with 7–8 hrs sleep showed 8% higher predicted scores vs entries with under 6 hrs.</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon" style="background:#fee2e2">📋</div>
+          <div>
+            <div class="insight-title">Assignment Completion</div>
+            <div class="insight-desc">Completing 9–10 out of 10 assignments correlates with a 12-point boost in predicted score on average.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">🌟 Top Improvement Tips</div>
+          <ul class="tip-list">
+            <li class="tip-item">
+              <div class="tip-num">1</div>
+              <div class="tip-text">Increase study hours from <strong>5h to 7h</strong> on days before exams. Consistent revision beats last-minute cramming.</div>
+            </li>
+            <li class="tip-item">
+              <div class="tip-num">2</div>
+              <div class="tip-text">Aim for <strong>≥85% attendance</strong>. Missing even 3 classes per month adds up significantly over a semester.</div>
+            </li>
+            <li class="tip-item">
+              <div class="tip-num">3</div>
+              <div class="tip-text">Maintain <strong>7–8 hours of sleep</strong> nightly. Memory consolidation during sleep directly improves exam performance.</div>
+            </li>
+            <li class="tip-item">
+              <div class="tip-num">4</div>
+              <div class="tip-text">Complete all <strong>10 assignments</strong>. They reinforce understanding and boost your baseline performance score.</div>
+            </li>
+            <li class="tip-item">
+              <div class="tip-num">5</div>
+              <div class="tip-text">Consider <strong>extra coaching</strong> for subjects where your previous marks are below 60 — it adds ~4 predicted points on average.</div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Performance Breakdown</div>
+          <div class="card-sub">Across your 12 predictions</div>
+          <div class="mini-rings" style="display:flex;flex-direction:column;gap:16px;margin-top:20px">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <span style="font-size:12.5px;color:var(--ink2)">📚 Avg Study Impact</span>
+                <span style="font-size:12.5px;font-weight:700">72%</span>
+              </div>
+              <div class="bar-track" style="height:8px">
+                <div class="bar-fill" style="width:72%;background:var(--primary)"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <span style="font-size:12.5px;color:var(--ink2)">🏫 Attendance Avg</span>
+                <span style="font-size:12.5px;font-weight:700">86%</span>
+              </div>
+              <div class="bar-track" style="height:8px">
+                <div class="bar-fill" style="width:86%;background:var(--green)"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <span style="font-size:12.5px;color:var(--ink2)">😴 Sleep Score</span>
+                <span style="font-size:12.5px;font-weight:700">63%</span>
+              </div>
+              <div class="bar-track" style="height:8px">
+                <div class="bar-fill" style="width:63%;background:var(--amber)"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <span style="font-size:12.5px;color:var(--ink2)">📋 Assignment Rate</span>
+                <span style="font-size:12.5px;font-weight:700">90%</span>
+              </div>
+              <div class="bar-track" style="height:8px">
+                <div class="bar-fill" style="width:90%;background:var(--green)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Toast -->
+<div class="toast" id="toast">✅ Prediction saved to history!</div>
 
 <script>
-  // Model weights learned from sklearn (approximate, embedded for demo)
-  // Actual values from training: coefficients × scaler
-  const WEIGHTS = {
-    study:  3.5,
-    sleep:  1.2,
-    attend: 0.30,
-    prev:   0.25,
-    extra:  4.0,
-  };
-  const BIAS = 5.0;
+// ── State ────────────────────────────────────────────────────
+const sliders = { study:5, attend:80, sleep:7 };
+let examType = 'midterm';
+let currentScore = null;
+const historyData = [
+  { exam:'Final Exam',  study:7,   attend:90, prev:80, asgn:9, sleep:7.5, extra:1, score:88, perf:'high',    date:'Apr 18, 2026' },
+  { exam:'Midterm',     study:5,   attend:82, prev:72, asgn:7, sleep:7,   extra:0, score:74, perf:'average', date:'Apr 10, 2026' },
+  { exam:'Unit Test',   study:3,   attend:70, prev:60, asgn:5, sleep:6,   extra:0, score:56, perf:'low',     date:'Mar 28, 2026' },
+  { exam:'Practical',   study:6,   attend:95, prev:85, asgn:10,sleep:8,   extra:1, score:92, perf:'high',    date:'Mar 15, 2026' },
+  { exam:'Midterm',     study:4.5, attend:78, prev:68, asgn:6, sleep:6.5, extra:0, score:67, perf:'average', date:'Mar 05, 2026' },
+  { exam:'Final Exam',  study:8,   attend:88, prev:76, asgn:9, sleep:7,   extra:1, score:85, perf:'high',    date:'Feb 22, 2026' },
+];
+let filteredHistory = [...historyData];
 
-  const state = {
-    study:  5.0,
-    sleep:  7.0,
-    attend: 80,
-    prev:   65,
-    extra:  0
-  };
+// ── Nav ──────────────────────────────────────────────────────
+const pageMeta = {
+  home:     { title:'Dashboard',     crumb:'Overview of your performance' },
+  predict:  { title:'Predict Score', crumb:'Enter student details to get a prediction' },
+  history:  { title:'History',       crumb:'All your past predictions' },
+  insights: { title:'Insights',      crumb:'Tips and analytics to improve' },
+};
 
-  function update(key, val) {
-    state[key] = parseFloat(val);
-    const suffix = key === 'attend' ? '%' : '';
-    document.getElementById('val-' + key).textContent = val + suffix;
-    predict();
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('topbar-title').textContent = pageMeta[id].title;
+  document.getElementById('topbar-crumb').textContent = pageMeta[id].crumb;
+  if (id === 'history') renderHistory(filteredHistory);
+  closeSidebar();
+}
+
+// ── Sidebar mobile ───────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── Sliders ──────────────────────────────────────────────────
+function updateSlider(key, val) {
+  sliders[key] = parseFloat(val);
+  const suffix = key === 'attend' ? '%' : 'h';
+  document.getElementById('sv-' + key).textContent = val + suffix;
+}
+
+// ── Exam pills ───────────────────────────────────────────────
+function selectPill(el, type) {
+  document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  examType = type;
+  livePredict();
+}
+
+// ── Validation ───────────────────────────────────────────────
+function validateField(el, min, max) {
+  const v = parseFloat(el.value);
+  const errId = el.id.replace('inp-', 'err-');
+  const errEl = document.getElementById(errId);
+  if (el.value === '' || (v >= min && v <= max)) {
+    el.classList.remove('error'); el.classList.toggle('valid', el.value !== '');
+    if (errEl) errEl.classList.remove('show');
+  } else {
+    el.classList.add('error'); el.classList.remove('valid');
+    if (errEl) errEl.classList.add('show');
+  }
+}
+
+// ── Prediction logic ─────────────────────────────────────────
+function calcScore() {
+  const study  = sliders.study;
+  const attend = sliders.attend;
+  const sleep  = sliders.sleep;
+  const prev   = parseFloat(document.getElementById('inp-prev').value) || 65;
+  const asgn   = parseFloat(document.getElementById('inp-asgn').value) || 7;
+  const extra  = parseInt(document.getElementById('sel-extra').value);
+  const examBonus = { midterm:0, final:2, unit:-1, practical:1 }[examType] || 0;
+
+  let score =
+    3.5 * study +
+    0.30 * attend +
+    1.2 * sleep +
+    0.25 * prev +
+    1.5 * asgn +
+    4.0 * extra +
+    examBonus + 3;
+
+  return Math.min(100, Math.max(0, score));
+}
+
+function livePredict() {
+  // silently update ring if result is showing
+  if (document.getElementById('result-content').style.display !== 'none') {
+    const s = calcScore();
+    updateResultUI(s, false);
+  }
+}
+
+function runPredict() {
+  const btn = document.getElementById('predict-btn');
+  btn.classList.add('loading');
+
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    const score = calcScore();
+    currentScore = score;
+
+    document.getElementById('result-placeholder').style.display = 'none';
+    document.getElementById('result-content').style.display = 'block';
+    updateResultUI(score, true);
+    saveToHistory(score);
+    showToast('✅ Prediction saved to history!');
+  }, 1200);
+}
+
+function updateResultUI(score, animate) {
+  // Ring
+  const circumference = 376;
+  const offset = circumference - (score / 100) * circumference;
+  const ring = document.getElementById('ring-fill');
+  if (animate) {
+    ring.style.strokeDashoffset = circumference;
+    setTimeout(() => { ring.style.strokeDashoffset = offset; }, 50);
+  } else {
+    ring.style.strokeDashoffset = offset;
   }
 
-  function predict() {
-    state.extra = document.getElementById('toggle-extra').checked ? 1 : 0;
+  // Color
+  let color, perf, grade;
+  if (score >= 80) {
+    color = '#22c55e'; perf = '🏆 High Performance'; grade = 'Excellent — Keep it up!';
+  } else if (score >= 60) {
+    color = '#f59e0b'; perf = '📘 Average Performance'; grade = 'Good — Room to improve';
+  } else {
+    color = '#ef4444'; perf = '⚠️ Low Performance'; grade = 'Needs attention';
+  }
 
-    // Compute raw score (mirrors the Python formula)
-    let score =
-      WEIGHTS.study  * state.study  +
-      WEIGHTS.sleep  * state.sleep  +
-      WEIGHTS.attend * state.attend +
-      WEIGHTS.prev   * state.prev   +
-      WEIGHTS.extra  * state.extra  +
-      BIAS;
+  ring.style.stroke = color;
+  document.getElementById('score-num').textContent = score.toFixed(1);
+  const badge = document.getElementById('perf-badge');
+  badge.textContent = perf;
+  badge.style.background = score >= 80 ? '#dcfce7' : score >= 60 ? '#fef3c7' : '#fee2e2';
+  badge.style.color = color;
+  document.getElementById('score-grade').textContent = grade;
 
-    score = Math.min(100, Math.max(0, score));
+  // Factor bars
+  const study  = sliders.study;
+  const attend = sliders.attend;
+  const sleep  = sliders.sleep;
+  const prev   = parseFloat(document.getElementById('inp-prev').value) || 65;
+  const asgn   = parseFloat(document.getElementById('inp-asgn').value) || 7;
 
-    // Compute individual contributions
-    const contribs = {
-      study:  WEIGHTS.study  * state.study,
-      sleep:  WEIGHTS.sleep  * state.sleep,
-      attend: WEIGHTS.attend * state.attend,
-      prev:   WEIGHTS.prev   * state.prev,
-      extra:  WEIGHTS.extra  * state.extra,
-    };
-    const maxC = Math.max(...Object.values(contribs));
+  const factors = [
+    { name:'Study Hours',  val: 3.5*study,   max:42 },
+    { name:'Attendance',   val: 0.3*attend,  max:30 },
+    { name:'Prev Score',   val: 0.25*prev,   max:25 },
+    { name:'Assignments',  val: 1.5*asgn,    max:15 },
+    { name:'Sleep',        val: 1.2*sleep,   max:12 },
+  ];
+  const maxVal = Math.max(...factors.map(f => f.val));
 
-    // Grade
-    let grade, advice, color, bgColor, barColor;
-    if      (score >= 85) { grade = "Excellent 🏆"; advice = "Outstanding! You're well-prepared for this exam.";          color = "#2d6a4f"; bgColor = "#d8f3dc"; barColor = "#2d6a4f"; }
-    else if (score >= 70) { grade = "Good 👍";      advice = "Solid performance. A bit more focus and you'll excel.";    color = "#1b4f72"; bgColor = "#d6eaf8"; barColor = "#1b4f72"; }
-    else if (score >= 55) { grade = "Average 📘";   advice = "You're on track. Try increasing daily study hours.";       color = "#e07b39"; bgColor = "#fde8d8"; barColor = "#e07b39"; }
-    else if (score >= 40) { grade = "Below Avg ⚠️"; advice = "Consider extra coaching and improving sleep quality.";    color = "#b7950b"; bgColor = "#fef9e7"; barColor = "#f1c40f"; }
-    else                  { grade = "At Risk 🚨";   advice = "Seek academic support urgently. Revise your study plan."; color = "#c1121f"; bgColor = "#ffe0e0"; barColor = "#c1121f"; }
-
-    // Update UI
-    const scoreEl = document.getElementById('score-display');
-    scoreEl.innerHTML = `${score.toFixed(1)}<sub>/100</sub>`;
-    scoreEl.style.color = color;
-
-    const badge = document.getElementById('grade-badge');
-    badge.textContent = grade;
-    badge.style.background = bgColor;
-    badge.style.color = color;
-
-    document.getElementById('advice-text').textContent = advice;
-    document.getElementById('progress-fill').style.width = score + '%';
-    document.getElementById('progress-fill').style.background = barColor;
-
-    // Feature bars
-    const keys = ['study','attend','prev','sleep','extra'];
-    keys.forEach(k => {
-      const pct = maxC > 0 ? Math.min(100, (contribs[k] / maxC) * 100) : 0;
-      document.getElementById('bar-'  + k).style.width = pct + '%';
-      document.getElementById('fval-' + k).textContent = contribs[k].toFixed(1);
+  const container = document.getElementById('factor-bars');
+  container.innerHTML = '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2);margin-bottom:10px">Factor Contribution</div>';
+  factors.forEach(f => {
+    const pct = maxVal > 0 ? Math.round((f.val / maxVal) * 100) : 0;
+    container.innerHTML += `
+      <div class="bar-row">
+        <span class="bar-name">${f.name}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${animate ? 0 : pct}%;background:${color}" id="bf-${f.name.replace(' ','')}"></div></div>
+        <span class="bar-pct">${pct}%</span>
+      </div>`;
+  });
+  if (animate) setTimeout(() => {
+    factors.forEach(f => {
+      const pct = maxVal > 0 ? Math.round((f.val / maxVal) * 100) : 0;
+      const el = document.getElementById('bf-' + f.name.replace(' ',''));
+      if (el) el.style.width = pct + '%';
     });
+  }, 100);
 
-    // Show card
-    document.getElementById('result-card').classList.add('visible');
+  // Perf track
+  const segs = 5;
+  const lit = Math.ceil((score / 100) * segs);
+  for (let i = 1; i <= segs; i++) {
+    document.getElementById('ps' + i).style.background =
+      i <= lit ? color : 'var(--border)';
   }
+}
 
-  // Run once on load
-  predict();
+// ── Reset ────────────────────────────────────────────────────
+function resetForm() {
+  document.getElementById('sl-study').value = 5; updateSlider('study', 5);
+  document.getElementById('sl-attend').value = 80; updateSlider('attend', 80);
+  document.getElementById('sl-sleep').value = 7; updateSlider('sleep', 7);
+  document.getElementById('inp-prev').value = '';
+  document.getElementById('inp-asgn').value = '';
+  document.getElementById('sel-extra').value = 0;
+  document.querySelectorAll('.pill-btn').forEach((b,i) => b.classList.toggle('active', i === 0));
+  examType = 'midterm';
+  document.getElementById('result-placeholder').style.display = 'block';
+  document.getElementById('result-content').style.display = 'none';
+}
+
+// ── History ──────────────────────────────────────────────────
+function saveToHistory(score) {
+  const prev = parseFloat(document.getElementById('inp-prev').value) || 65;
+  const asgn = parseFloat(document.getElementById('inp-asgn').value) || 7;
+  const perf = score >= 80 ? 'high' : score >= 60 ? 'average' : 'low';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  historyData.unshift({
+    exam: examType.charAt(0).toUpperCase() + examType.slice(1),
+    study: sliders.study, attend: sliders.attend,
+    prev, asgn, sleep: sliders.sleep,
+    extra: parseInt(document.getElementById('sel-extra').value),
+    score: parseFloat(score.toFixed(1)), perf, date: dateStr
+  });
+  filteredHistory = [...historyData];
+}
+
+function renderHistory(data) {
+  const tbody = document.getElementById('history-body');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--ink2)">No predictions yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((r, i) => {
+    const cls = r.perf === 'high' ? 'badge-green' : r.perf === 'average' ? 'badge-amber' : 'badge-red';
+    const scoreColor = r.perf === 'high' ? '#15803d' : r.perf === 'average' ? '#92400e' : '#b91c1c';
+    const scoreBg    = r.perf === 'high' ? '#dcfce7' : r.perf === 'average' ? '#fef3c7' : '#fee2e2';
+    return `<tr>
+      <td style="color:var(--ink2);font-size:12px">${i+1}</td>
+      <td><strong>${r.exam}</strong></td>
+      <td>${r.study}h</td>
+      <td>${r.attend}%</td>
+      <td>${r.prev}</td>
+      <td><span class="score-pill" style="background:${scoreBg};color:${scoreColor}">${r.score}</span></td>
+      <td><span class="badge ${cls}">${r.perf.charAt(0).toUpperCase()+r.perf.slice(1)}</span></td>
+      <td style="color:var(--ink2);font-size:12px">${r.date}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterHistory(q) {
+  q = q.toLowerCase();
+  filteredHistory = historyData.filter(r =>
+    r.exam.toLowerCase().includes(q) || r.date.toLowerCase().includes(q)
+  );
+  renderHistory(filteredHistory);
+}
+
+function filterTag(el, tag) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  filteredHistory = tag === 'all' ? [...historyData] : historyData.filter(r => r.perf === tag);
+  renderHistory(filteredHistory);
+}
+
+// ── Dashboard chart ──────────────────────────────────────────
+function renderDashboard() {
+  const scores = [67, 74, 56, 92, 85, 74, 88];
+  const labels = ['Mar5','Mar15','Mar28','Apr10','Apr18','Apr22','Apr22'];
+  const max = Math.max(...scores);
+  const chart = document.getElementById('trend-chart');
+  chart.innerHTML = scores.map((s, i) => `
+    <div class="chart-bar-wrap">
+      <div class="chart-bar ${i === scores.length-1 ? 'highlight' : ''}"
+           style="height:${(s/max)*90}px"
+           title="Score: ${s}"></div>
+      <span class="chart-bar-label">${labels[i]}</span>
+    </div>`
+  ).join('');
+
+  const colors = ['#4361ee','#22c55e','#ef4444','#7c9dff','#f59e0b','#4361ee'];
+  const recent = historyData.slice(0,4);
+  document.getElementById('recent-list').innerHTML = recent.map((r,i) => {
+    const perfClass = r.perf === 'high' ? 'badge-green' : r.perf === 'average' ? 'badge-amber' : 'badge-red';
+    return `<div class="recent-item">
+      <div class="recent-avatar" style="background:${colors[i]}">${r.exam.charAt(0)}</div>
+      <div>
+        <div class="recent-name">${r.exam}</div>
+        <div class="recent-sub">${r.date}</div>
+      </div>
+      <div>
+        <div class="recent-score" style="color:${r.perf==='high'?'#15803d':r.perf==='average'?'#92400e':'#b91c1c'}">${r.score}</div>
+        <span class="badge ${perfClass}">${r.perf}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Toast ────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+renderDashboard();
 </script>
 </body>
 </html>
