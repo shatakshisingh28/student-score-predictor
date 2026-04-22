@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Score Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2eb;
+    --card: #ffffff;
+    --ink: #1a1a2e;
+    --muted: #6b6b80;
+    --green: #2d6a4f;
+    --green-light: #d8f3dc;
+    --amber: #e07b39;
+    --amber-light: #fde8d8;
+    --red: #c1121f;
+    --red-light: #ffe0e0;
+    --blue: #1b4f72;
+    --border: #e0ddd6;
+    --shadow: 0 2px 20px rgba(26,26,46,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  /* Subtle grid texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(26,26,46,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26,26,46,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: slideIn 0.5s ease forwards;
+  }
+
+  .header-tag {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+
+  h1 span { color: var(--amber); }
+
+  .header-sub {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  /* Layout grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    animation: slideIn 0.5s ease forwards;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.15s; }
+  .card:nth-child(3) { animation-delay: 0.2s; }
+  .card.full { grid-column: 1 / -1; }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+  }
+
+  /* Sliders */
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .field-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--amber);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--ink);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  .field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  .toggle-label { font-size: 13px; font-weight: 500; }
+  .toggle-sub { font-size: 11px; color: var(--muted); }
+
+  .toggle {
+    position: relative;
+    width: 44px; height: 24px;
+    flex-shrink: 0;
+  }
+
+  .toggle input { display: none; }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle-slider::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 3px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  .toggle input:checked + .toggle-slider { background: var(--green); }
+  .toggle input:checked + .toggle-slider::after { transform: translateX(20px); }
+
+  /* Predict button */
+  .btn-predict {
+    width: 100%;
+    padding: 16px;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-predict::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--amber);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .btn-predict:hover::before { transform: translateX(0); }
+  .btn-predict span { position: relative; z-index: 1; }
+  .btn-predict:hover { color: var(--ink); }
+  .btn-predict:active { transform: scale(0.98); }
+
+  /* Result card */
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: all 0.4s ease;
+    margin-top: 16px;
+  }
+
+  .result-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .result-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .score-display {
+    font-family: 'Syne', sans-serif;
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 1;
+    transition: color 0.4s;
+  }
+
+  .score-display sub {
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--muted);
+    vertical-align: bottom;
+    margin-left: 4px;
+  }
+
+  .grade-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+
+  .advice-text {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+    font-style: italic;
+    border-left: 3px solid var(--border);
+    padding-left: 16px;
+    margin-top: 20px;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-top: 20px;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .progress-bar-bg {
+    height: 8px;
+    background: var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    width: 0%;
+    transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  /* Feature importance mini chart */
+  .factors {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .factors-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .factor-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .factor-name { width: 130px; color: var(--ink); flex-shrink: 0; }
+  .factor-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .factor-bar { height: 100%; border-radius: 4px; background: var(--amber); transition: width 0.7s ease; }
+  .factor-val { width: 36px; text-align: right; color: var(--muted); font-size: 11px; }
+
+  /* Animations */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* How it works */
+  .how-section {
+    margin-top: 16px;
+    opacity: 0;
+    animation: slideIn 0.5s ease forwards 0.4s;
+  }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  @media (max-width: 560px) { .how-grid { grid-template-columns: 1fr; } }
+
+  .how-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .how-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .how-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .how-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-tag">Machine Learning · Linear Regression</div>
+    <h1>Student Score<br><span>Predictor</span></h1>
+    <p class="header-sub">Adjust the sliders below to enter student data. The model predicts the expected exam score using 5 key features.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- Card 1: Study & Sleep -->
+    <div class="card">
+      <div class="card-title">Academic Habits</div>
+
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">📚 Study Hours / Day</span>
+          <span class="field-value" id="val-study">5.0</span>
+        </div>
+        <input type="range" min="1" max="10" step="0.5" value="5"
+               oninput="update('study', this.value)">
+        <div class="field-hint">Hours dedicated to studying each day</div>
+      </div>
+
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">😴 Sleep Hours / Night</span>
+          <span class="field-value" id="val-sleep">7.0</span>
+        </div>
+        <input type="range" min="4" max="9" step="0.5" value="7"
+               oninput="update('sleep', this.value)">
+        <div class="field-hint">Sleep directly affects memory retention</div>
+      </div>
+    </div>
+
+    <!-- Card 2: Attendance & Previous Score -->
+    <div class="card">
+      <div class="card-title">Performance Metrics</div>
+
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">🏫 Attendance</span>
+          <span class="field-value" id="val-attend">80<small style="font-size:12px">%</small></span>
+        </div>
+        <input type="range" min="50" max="100" step="1" value="80"
+               oninput="update('attend', this.value)">
+        <div class="field-hint">Percentage of classes attended</div>
+      </div>
+
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">📝 Previous Score</span>
+          <span class="field-value" id="val-prev">65</span>
+        </div>
+        <input type="range" min="0" max="100" step="1" value="65"
+               oninput="update('prev', this.value)">
+        <div class="field-hint">Score from most recent past exam</div>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">🎓 Extra Coaching</div>
+          <div class="toggle-sub">Attends additional classes outside school</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-extra" onchange="predict()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Predict button -->
+  <div class="card full" style="padding: 20px 28px; animation-delay: 0.25s;">
+    <button class="btn-predict" onclick="predict()">
+      <span>→ Predict Exam Score</span>
+    </button>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="result-card">
+    <div class="result-top">
+      <div>
+        <div class="score-display" id="score-display">—<sub>/100</sub></div>
+        <div class="grade-badge" id="grade-badge">–</div>
+      </div>
+    </div>
+    <div class="advice-text" id="advice-text">Run the predictor to see results.</div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">Score Meter</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="factors">
+      <div class="factors-title">Feature Impact (relative weight)</div>
+      <div class="factor-row">
+        <span class="factor-name">📚 Study Hours</span>
+        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-study" style="width:0%"></div></div>
+        <span class="factor-val" id="fval-study">—</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-name">🏫 Attendance</span>
+        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-attend" style="width:0%"></div></div>
+        <span class="factor-val" id="fval-attend">—</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-name">📝 Prev Score</span>
+        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-prev" style="width:0%; background:#1b4f72"></div></div>
+        <span class="factor-val" id="fval-prev">—</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-name">😴 Sleep</span>
+        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-sleep" style="width:0%; background:#2d6a4f"></div></div>
+        <span class="factor-val" id="fval-sleep">—</span>
+      </div>
+      <div class="factor-row">
+        <span class="factor-name">🎓 Extra Classes</span>
+        <div class="factor-bar-wrap"><div class="factor-bar" id="bar-extra" style="width:0%; background:#c1121f"></div></div>
+        <span class="factor-val" id="fval-extra">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="how-section">
+    <div class="card" style="margin-top:16px; opacity:1; animation:none;">
+      <div class="card-title">How It Works</div>
+      <div class="how-grid">
+        <div class="how-item">
+          <div class="how-num">01</div>
+          <div class="how-title">Data Collection</div>
+          <div class="how-desc">500 synthetic student records generated with realistic noise and feature weights.</div>
+        </div>
+        <div class="how-item">
+          <div class="how-num">02</div>
+          <div class="how-title">Linear Regression</div>
+          <div class="how-desc">A trained model learns the weight of each feature. Scaled using StandardScaler for accuracy.</div>
+        </div>
+        <div class="how-item">
+          <div class="how-num">03</div>
+          <div class="how-title">Prediction</div>
+          <div class="how-desc">Your inputs are combined using the model's learned equation to estimate the exam score.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Model weights learned from sklearn (approximate, embedded for demo)
+  // Actual values from training: coefficients × scaler
+  const WEIGHTS = {
+    study:  3.5,
+    sleep:  1.2,
+    attend: 0.30,
+    prev:   0.25,
+    extra:  4.0,
+  };
+  const BIAS = 5.0;
+
+  const state = {
+    study:  5.0,
+    sleep:  7.0,
+    attend: 80,
+    prev:   65,
+    extra:  0
+  };
+
+  function update(key, val) {
+    state[key] = parseFloat(val);
+    const suffix = key === 'attend' ? '%' : '';
+    document.getElementById('val-' + key).textContent = val + suffix;
+    predict();
+  }
+
+  function predict() {
+    state.extra = document.getElementById('toggle-extra').checked ? 1 : 0;
+
+    // Compute raw score (mirrors the Python formula)
+    let score =
+      WEIGHTS.study  * state.study  +
+      WEIGHTS.sleep  * state.sleep  +
+      WEIGHTS.attend * state.attend +
+      WEIGHTS.prev   * state.prev   +
+      WEIGHTS.extra  * state.extra  +
+      BIAS;
+
+    score = Math.min(100, Math.max(0, score));
+
+    // Compute individual contributions
+    const contribs = {
+      study:  WEIGHTS.study  * state.study,
+      sleep:  WEIGHTS.sleep  * state.sleep,
+      attend: WEIGHTS.attend * state.attend,
+      prev:   WEIGHTS.prev   * state.prev,
+      extra:  WEIGHTS.extra  * state.extra,
+    };
+    const maxC = Math.max(...Object.values(contribs));
+
+    // Grade
+    let grade, advice, color, bgColor, barColor;
+    if      (score >= 85) { grade = "Excellent 🏆"; advice = "Outstanding! You're well-prepared for this exam.";          color = "#2d6a4f"; bgColor = "#d8f3dc"; barColor = "#2d6a4f"; }
+    else if (score >= 70) { grade = "Good 👍";      advice = "Solid performance. A bit more focus and you'll excel.";    color = "#1b4f72"; bgColor = "#d6eaf8"; barColor = "#1b4f72"; }
+    else if (score >= 55) { grade = "Average 📘";   advice = "You're on track. Try increasing daily study hours.";       color = "#e07b39"; bgColor = "#fde8d8"; barColor = "#e07b39"; }
+    else if (score >= 40) { grade = "Below Avg ⚠️"; advice = "Consider extra coaching and improving sleep quality.";    color = "#b7950b"; bgColor = "#fef9e7"; barColor = "#f1c40f"; }
+    else                  { grade = "At Risk 🚨";   advice = "Seek academic support urgently. Revise your study plan."; color = "#c1121f"; bgColor = "#ffe0e0"; barColor = "#c1121f"; }
+
+    // Update UI
+    const scoreEl = document.getElementById('score-display');
+    scoreEl.innerHTML = `${score.toFixed(1)}<sub>/100</sub>`;
+    scoreEl.style.color = color;
+
+    const badge = document.getElementById('grade-badge');
+    badge.textContent = grade;
+    badge.style.background = bgColor;
+    badge.style.color = color;
+
+    document.getElementById('advice-text').textContent = advice;
+    document.getElementById('progress-fill').style.width = score + '%';
+    document.getElementById('progress-fill').style.background = barColor;
+
+    // Feature bars
+    const keys = ['study','attend','prev','sleep','extra'];
+    keys.forEach(k => {
+      const pct = maxC > 0 ? Math.min(100, (contribs[k] / maxC) * 100) : 0;
+      document.getElementById('bar-'  + k).style.width = pct + '%';
+      document.getElementById('fval-' + k).textContent = contribs[k].toFixed(1);
+    });
+
+    // Show card
+    document.getElementById('result-card').classList.add('visible');
+  }
+
+  // Run once on load
+  predict();
+</script>
+</body>
+</html>
